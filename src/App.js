@@ -43,8 +43,8 @@ function UserPrompt() {
       {/* Display the submitted prompt */}
       <div>
         {submittedPrompt && (
-          <div className="absolute top-55 right-40 bg-gray-300 text-blue-700 p-2 rounded-lg">
-            <p className="text-md font-semibold text-blue-600">
+          <div className="text-right mt-4 text-blue-700 p-2 rounded-lg">
+            <p className="max-w-72 break-words inline-block text-md font-semibold px-2 py-1 rounded-lg bg-gray-300 text-blue-600">
               {submittedPrompt}
             </p>
           </div>
