@@ -3,49 +3,62 @@ import "./App.css";
 import React, {useState} from 'react';
 import axios from 'axios';
 
-function App() {
-  const [file, setFile] = useState();
-  const [responseText, setResponseText] = useState('');
-  const [file_text, setFileText] = useState();
+  function FileUpload() {
+    const [file, setFile] = useState();
+    const [responseText, setResponseText] = useState('');
+    const [file_text, setFileText] = useState("");
 
-  function handleChange(event) {
-    setFile(event.target.files[0])
-  }
-  
-  function handleSubmit(event) {
-    event.preventDefault()
-    const url = 'http://localhost:5000/upload-pdf';
-    const formData = new FormData();
-
-    if (!file) {
-      setResponseText("No file selected! Please select a file!")
+    const handleFileChange=(event)=> {
+      setFile(event.target.files[0])
     }
-    else {
-      formData.append('file', file);
-      formData.append('fileName', file.name);
 
-      const config = {
-        headers: {
-          'content-type': 'multipart/form-data',
-        },
-      };
-  
-      axios.post(url, formData, config).then((response) => {
-        if (response.data.error) {
-          setResponseText(`File "${file.name}" was empty. Please upload a different file!`)
-        } 
-        else {
-          setFileText(response.data.text)
-          setResponseText(`File "${file.name}" was uploaded successfully!`);
-        }
-        
-      })
-        .catch((error) => {
-          setResponseText(`${error.response.data.error}: File "${file.name}" was empty. Please upload a different file!`)
-      });
-    } 
+    const handleFileSubmit = (event) => {
+      event.preventDefault()
+      const url = 'http://localhost:5000/upload-pdf';
+      const formData = new FormData();
+
+      if (!file) {
+        setResponseText("No file selected! Please select a file!")
+      }
+      else {
+        formData.append('file', file);
+        formData.append('fileName', file.name);
+
+        const config = {
+          headers: {
+            'content-type': 'multipart/form-data',
+          },
+        };
+    
+        axios.post(url, formData, config).then((response) => {
+          if (response.data.error) {
+            setResponseText(`File "${file.name}" was empty. Please upload a different file!`)
+          } 
+          else {
+            setFileText(response.data.text)
+            setResponseText(`File "${file.name}" was uploaded successfully! Here is the file text:\n`);
+          }
+          
+        })
+          .catch((error) => {
+            setResponseText(`${error.response.data.error}: File "${file.name}" was empty. Please upload a different file!`)
+        });
+      } 
+    }
+
+    return (
+      <div className="file-submit-button">
+        <form onSubmit={handleFileSubmit}>
+            <input type="file" id="myFile" name="filename" accept=".pdf" onChange={handleFileChange}></input>
+            <button className='submit-button' type="submit">Upload PDF</button>
+        </form>
+        <p>{responseText}</p>
+        <p>{file_text}</p>
+      </div>
+    );
   }
 
+  function App() {
   return (
     <div className="App">
       <header className="App-header">
@@ -53,11 +66,7 @@ function App() {
           You have successfully gotten to the start of Book-RAG!
         </h1>
         <img src={logo} className="App-logo" alt="logo" />
-        <form onSubmit={handleSubmit}>
-          <input type="file" id="myFile" name="filename" accept=".pdf" onChange={handleChange}></input>
-          <button type="submit">Upload PDF</button>
-        </form>
-        <p>{responseText}</p>
+        <FileUpload/>
       </header>
     </div>
   );
