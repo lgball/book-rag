@@ -6,6 +6,7 @@ import axios from 'axios';
 function App() {
   const [file, setFile] = useState();
   const [responseText, setResponseText] = useState('');
+  const [file_text, setFileText] = useState();
 
   function handleChange(event) {
     setFile(event.target.files[0])
@@ -28,13 +29,13 @@ function App() {
           'content-type': 'multipart/form-data',
         },
       };
-      
-
+  
       axios.post(url, formData, config).then((response) => {
         if (response.data.error) {
           setResponseText(`File "${file.name}" was empty. Please upload a different file!`)
         } 
         else {
+          setFileText(response.data.text)
           setResponseText(`File "${file.name}" was uploaded successfully!`);
         }
         
