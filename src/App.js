@@ -1,4 +1,4 @@
-import logo from "./ChapterChatLogo.png";
+//import logo from "./ChapterChatLogo.png";
 // import Form from "react-bootstrap/Form";
 // import { InputGroup } from "react-bootstrap";
 import "./App.css";
@@ -71,6 +71,7 @@ function UserPrompt() {
 
       if (!file) {
         setResponseText("No file selected! Please select a file!")
+        setFileText("")
       }
       else {
         formData.append('file', file);
@@ -94,6 +95,7 @@ function UserPrompt() {
         })
           .catch((error) => {
             setResponseText(`${error.response.data.error}: File "${file.name}" was empty. Please upload a different file!`)
+            setFileText("")
         });
       } 
     }
@@ -105,8 +107,10 @@ function UserPrompt() {
             <button class='text-blue-500 bg-white hover:bg-gray-200 focus:ring-4 focus:outline-none focus:ring-white-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center  hover:bg-gray-800 focus:ring-4 focus:outline-none focus:ring-white-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center light:hover:bg-gray-700 dark:focus:ring-blue-800' 
             type="submit">Upload PDF</button>
         </form>
-        <p>{responseText}</p>
-        <p>{file_text}</p>
+        <div class='text-white'>
+          <p>{responseText}</p>
+          <p>{file_text}</p>
+        </div>
       </div>
     );
   }
