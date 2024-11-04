@@ -1,8 +1,9 @@
-import logo from "./ChapterChatLogo.png";
+//import logo from "./ChapterChatLogo.png";
 // import Form from "react-bootstrap/Form";
 // import { InputGroup } from "react-bootstrap";
 import "./App.css";
 import React, { useState } from "react";
+import axios from 'axios';
 
 function UserPrompt() {
   const [inputValue, setInputValue] = useState("");
@@ -54,7 +55,67 @@ function UserPrompt() {
   );
 }
 
-function App() {
+  function FileUpload() {
+    const [file, setFile] = useState();
+    const [responseText, setResponseText] = useState('');
+    const [file_text, setFileText] = useState("");
+
+    const handleFileChange=(event)=> {
+      setFile(event.target.files[0])
+    }
+
+    const handleFileSubmit = (event) => {
+      event.preventDefault()
+      const url = 'http://localhost:5000/upload-pdf';
+      const formData = new FormData();
+
+      if (!file) {
+        setResponseText("No file selected! Please select a file!")
+        setFileText("")
+      }
+      else {
+        formData.append('file', file);
+        formData.append('fileName', file.name);
+
+        const config = {
+          headers: {
+            'content-type': 'multipart/form-data',
+          },
+        };
+    
+        axios.post(url, formData, config).then((response) => {
+          if (response.data.error) {
+            setResponseText(`File "${file.name}" was empty. Please upload a different file!`)
+          } 
+          else {
+            setFileText(response.data.text)
+            setResponseText(`File "${file.name}" was uploaded successfully! Here is the file text:\n`);
+          }
+          
+        })
+          .catch((error) => {
+            setResponseText(`${error.response.data.error}: File "${file.name}" was empty. Please upload a different file!`)
+            setFileText("")
+        });
+      } 
+    }
+
+    return (
+      <div className="file-submit-button">
+        <form onSubmit={handleFileSubmit}>
+            <input type="file" id="myFile" name="filename" accept=".pdf" onChange={handleFileChange}></input>
+            <button class='text-blue-500 bg-white hover:bg-gray-200 focus:ring-4 focus:outline-none focus:ring-white-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center  hover:bg-gray-800 focus:ring-4 focus:outline-none focus:ring-white-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center light:hover:bg-gray-700 dark:focus:ring-blue-800' 
+            type="submit">Upload PDF</button>
+        </form>
+        <div class='text-white'>
+          <p>{responseText}</p>
+          <p>{file_text}</p>
+        </div>
+      </div>
+    );
+  }
+
+  function App() {
   return (
     <div className="App bg-cyan-200 2-300">
       <header className="App-header bg-white-200">
@@ -64,8 +125,9 @@ function App() {
       </header>
       <div className="grid flex justify-center gap-2 w-200">
         {/* <img src={logo} alt="logo" class="max-w-xs" /> */}
-
+  
         <UserPrompt />
+        <FileUpload/>
       </div>
     </div>
   );
