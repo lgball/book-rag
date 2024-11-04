@@ -1,4 +1,4 @@
-//import logo from "./ChapterChatLogo.png";
+import logo from "./ChapterChatLogo.png";
 // import Form from "react-bootstrap/Form";
 // import { InputGroup } from "react-bootstrap";
 import "./App.css";
