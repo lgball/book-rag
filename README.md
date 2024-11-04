@@ -8,6 +8,11 @@ Run:
     npm start
 ```
 
+In a separate terminal run this (this will start the flask server needed for converting pdf to text):
+```
+    npm run start-flask
+```
+
 Note: I did get some deprecated dependencies, but it should be fine
 
 To start coding on an issue:
