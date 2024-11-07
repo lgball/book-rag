@@ -66,7 +66,9 @@ function UserPrompt() {
 
     const handleFileSubmit = (event) => {
       event.preventDefault()
-      const url = 'http://localhost:5000/upload-pdf';
+
+      // may need to change port to a different number to match the flask port depending on system
+      const url = 'http://localhost:3000/upload-pdf';
       const formData = new FormData();
 
       if (!file) {
