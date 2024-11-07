@@ -66,7 +66,7 @@ function UserPrompt() {
 
     const handleFileSubmit = (event) => {
       event.preventDefault()
-      const url = 'http://localhost:5000/';
+      const url = 'http://localhost:3000/upload-pdf';
       const formData = new FormData();
 
       if (!file) {
