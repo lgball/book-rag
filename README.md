@@ -14,11 +14,9 @@ In the first terminal run:
     npm start
 ```
 
-In the other terminal run this (this will start the flask server needed for converting pdf to text):
+In the other terminal run this after creating and activating a virtual environment (this will start the flask server needed for converting pdf to text):
 ```
-    pip install flask
-    pip install flask-cors
-    pip install PyMuPDF
+    pip install -r requirements.txt
     npm run start-flask
 ```
 
