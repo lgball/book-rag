@@ -66,7 +66,7 @@ function UserPrompt() {
 
     const handleFileSubmit = (event) => {
       event.preventDefault()
-      const url = 'http://localhost:3000/upload-pdf';
+      const url = 'http://localhost:5000/upload-pdf';
       const formData = new FormData();
 
       if (!file) {
@@ -84,17 +84,13 @@ function UserPrompt() {
         };
     
         axios.post(url, formData, config).then((response) => {
-          if (response.data.error) {
-            setResponseText(`File "${file.name}" was empty. Please upload a different file!`)
-          } 
-          else {
-            setFileText(response.data.text)
-            setResponseText(`File "${file.name}" was uploaded successfully! Here is the file text:\n`);
-          }
+          setFileText(response.data.text)
+          setResponseText(`File "${file.name}" was uploaded successfully! Here is the file text:\n`);
+        }
           
-        })
+        )
           .catch((error) => {
-            setResponseText(`${error.response.data.error}: File "${file.name}" was empty. Please upload a different file!`)
+            setResponseText(`"${error.response.data.error}`)
             setFileText("")
         });
       } 
