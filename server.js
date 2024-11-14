@@ -8,7 +8,7 @@ app.use(express.urlencoded({ extended: true }));
 // Serve static files from the "public" directory
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Define a route to handle form submission from the login page
+// Define a route to handle form submission from the login page, redirect to homepage
 app.post('/login', (req, res) => {
   const { username, password } = req.body;
   // Simple example of authentication logic
