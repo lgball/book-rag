@@ -15,8 +15,13 @@ def pdf_to_text():
             return jsonify({"error": "No file part"}), 400
 
         file = request.files['file']
+
         if file.name == '':
             return jsonify({"error": "No selected file"}), 400
+
+        if file.filename.endswith(".pdf") != True:
+            return jsonify({"error": file.filename + ": Incompatible file type. Please upload a PDF!"}), 400
+
 
         doc = fitz.open(stream=file.read(), filetype="pdf")
 
@@ -25,7 +30,7 @@ def pdf_to_text():
             text += page.get_text()
 
         if text == "":
-            return jsonify({"error": "Empty file"}), 400
+            return jsonify({"error": file.filename + ": Empty file uploaded. Please upload a different file!"}), 400
 
         return jsonify({"text": text})
 

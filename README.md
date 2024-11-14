@@ -1,15 +1,22 @@
 # book-rag
 ## Installation
 If you do not have Node.js installed, go to https://nodejs.org/en/download/package-manager
+Create a virtual environment in python for two terminals
 
-Run: 
+```
+python -m venv venv
+source venv/bin/activate
+```
+
+In the first terminal run: 
 ```
     npm install
     npm start
 ```
 
-In a separate terminal run this (this will start the flask server needed for converting pdf to text):
+In the other terminal run this after creating and activating a virtual environment (this will start the flask server needed for converting pdf to text):
 ```
+    pip install -r requirements.txt
     npm run start-flask
 ```
 
