@@ -113,6 +113,27 @@ function UserPrompt() {
     );
   }
 
+//login 
+const express = require('express');
+const path = require('path');
+const app = express();
+
+// Serve static files from the "public" directory
+app.use(express.static(path.join(__dirname, 'public')));
+
+// Define a route to handle form submission from the login page
+app.post('/login', (req, res) => {
+  const { username, password } = req.body;
+  // Add your authentication logic here
+  res.send(`Logged in as ${username}`);
+});
+
+const PORT = 3000;
+app.listen(PORT, () => {
+  console.log(`Server is running on http://localhost:${PORT}`);
+});
+
+
   function App() {
   return (
     <div className="App bg-cyan-200 2-300">
