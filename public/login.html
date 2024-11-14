@@ -3,19 +3,79 @@
 <head>
     <meta charset="UTF-8">
     <title>Login</title>
+    <style>
+        /* Set the background color to blue */
+        body {
+            background-color: #007bff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            font-family: Arial, sans-serif;
+            color: white;
+        }
+
+        /* Style the login form */
+        .login-container {
+            background-color: #ffffff;
+            color: #333;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+            width: 300px;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 24px;
+            margin-bottom: 20px;
+            color: #007bff;
+        }
+
+        label, input, button {
+            font-size: 16px;
+        }
+
+        input {
+            width: 100%;
+            padding: 10px;
+            margin-top: 8px;
+            margin-bottom: 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px;
+            width: 100%;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+    </style>
 </head>
 <body>
-    <h1>Login</h1>
-    <form action="/login" method="POST">
-        <label>Username:
-            <input type="text" name="username" required>
-        </label>
-        <br>
-        <label>Password:
-            <input type="password" name="password" required>
-        </label>
-        <br>
-        <button type="submit">Login</button>
-    </form>
+    <div class="login-container">
+        <h1>Login to Chapter Chat</h1>
+        <form action="/login" method="POST">
+            <label>Username:
+                <input type="text" name="username" required>
+            </label>
+            <br>
+            <label>Password:
+                <input type="password" name="password" required>
+            </label>
+            <br>
+            <button type="submit">Login</button>
+        </form>
+    </div>
 </body>
 </html>
