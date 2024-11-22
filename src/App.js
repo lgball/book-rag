@@ -1,8 +1,8 @@
-//import logo from "./ChapterChatLogo.png";
+import logo from "./logo.svg";
 // import Form from "react-bootstrap/Form";
 // import { InputGroup } from "react-bootstrap";
 import "./App.css";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import axios from 'axios';
 
 function UserPrompt() {
@@ -45,15 +45,49 @@ function UserPrompt() {
       <div>
         {submittedPrompt && (
           <div className="text-right mt-4 text-blue-700 p-2 rounded-lg">
-            <p className="max-w-72 break-words inline-block text-md font-semibold px-2 py-1 rounded-lg bg-gray-300 text-blue-600">
+            <p className="max-w-72 break-words inline-block text-md font-semibold px-2 py-1 rounded-lg bg-gray-700 text-blue-600">
               {submittedPrompt}
             </p>
+            <MachineResponse />
           </div>
         )}
       </div>
     </div>
   );
 }
+
+function MachineResponse() {
+  const [llmResponse, setLlmResponse] = useState("");
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+
+    const timer = setTimeout(() => {
+      setIsLoading(false); 
+      setLlmResponse("I love responding to humans"); 
+    }, 2000);
+
+    return () => clearTimeout(timer);
+  }, [llmResponse]);
+
+  return (
+      <div>
+        <div className="text-left mt-4 text-gray p-2 rounded-lg">
+          {isLoading ? (<div class="loading">
+          <span>.</span>
+          <span>.</span>
+          <span>.</span>
+          </div> ) : (
+          <p className="max-w-72 break-words inline-block text-md font-semibold px-2 py-1 rounded-lg bg-blue-700 text-gray-300">
+            {llmResponse}
+          </p>
+          )}
+        </div>
+      </div>
+  );
+}
+
+
 
   function FileUpload() {
     const [file, setFile] = useState();
@@ -68,7 +102,7 @@ function UserPrompt() {
       event.preventDefault()
 
       // may need to change port to a different number to match the flask port depending on system
-      const url = 'http://localhost:3000/upload-pdf';
+      const url = 'http://localhost:5000/upload-pdf';
       const formData = new FormData();
 
       if (!file) {
@@ -123,7 +157,6 @@ function UserPrompt() {
       </header>
       <div className="grid flex justify-center gap-2 w-200">
         {/* <img src={logo} alt="logo" class="max-w-xs" /> */}
-  
         <UserPrompt />
         <FileUpload/>
       </div>
