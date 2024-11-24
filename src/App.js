@@ -55,6 +55,38 @@ function UserPrompt() {
   );
 }
 
+function MachineResponse() {
+  const [llmResponse, setLlmResponse] = useState("");
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+
+    const timer = setTimeout(() => {
+      setIsLoading(false); 
+      setLlmResponse("I love responding to humans"); 
+    }, 2000);
+
+    return () => clearTimeout(timer);
+  }, [llmResponse]);
+
+  return (
+      <div>
+        <div className="text-left mt-4 text-gray p-2 rounded-lg">
+          {isLoading ? (<div class="loading">
+          <span>.</span>
+          <span>.</span>
+          <span>.</span>
+          </div> ) : (
+          <p className="max-w-72 break-words inline-block text-md font-semibold px-2 py-1 rounded-lg bg-blue-700 text-gray-300">
+            {llmResponse}
+          </p>
+          )}
+        </div>
+      </div>
+  );
+}
+
+
   function FileUpload() {
     const [file, setFile] = useState();
     const [responseText, setResponseText] = useState('');
@@ -66,11 +98,17 @@ function UserPrompt() {
 
     const handleFileSubmit = (event) => {
       event.preventDefault()
-      const url = 'http://localhost:5000/upload-pdf';
+
+      // may need to change port to a different number to match the flask port depending on system
+      const url = 'http://localhost:8080/upload-pdf';
       const formData = new FormData();
 
       if (!file) {
         setResponseText("No file selected! Please select a file!")
+        setFileText("")
+      }
+      else if (file.type !== 'application/pdf') {
+        setResponseText(`Incompatible File:  ${file.name} is not a pdf. Please select a PDF!`)
         setFileText("")
       }
       else {
@@ -80,22 +118,31 @@ function UserPrompt() {
         const config = {
           headers: {
             'content-type': 'multipart/form-data',
+            'Access-Control-Allow-Origin': '*'
           },
         };
     
         axios.post(url, formData, config).then((response) => {
-          if (response.data.error) {
-            setResponseText(`File "${file.name}" was empty. Please upload a different file!`)
-          } 
-          else {
-            setFileText(response.data.text)
+
+          if (response.data.text) {
+            setFileText(response.data.text);
             setResponseText(`File "${file.name}" was uploaded successfully! Here is the file text:\n`);
           }
-          
-        })
+          else {
+            setFileText(response.data.error)
+          }
+        }
+        )
           .catch((error) => {
-            setResponseText(`${error.response.data.error}: File "${file.name}" was empty. Please upload a different file!`)
-            setFileText("")
+            if (error.response) {
+              setResponseText(`"${error.response.data}`)
+              setFileText("")
+            }
+        
+            else {
+              setResponseText(`Failed to upload file.`)
+              setFileText("")
+            }
         });
       } 
     }
