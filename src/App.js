@@ -3,7 +3,7 @@
 // import { InputGroup } from "react-bootstrap";
 import "./App.css";
 import React, { useState, useEffect } from "react";
-import axios from 'axios';
+import axios from "axios";
 
 function UserPrompt() {
   const [inputValue, setInputValue] = useState("");
@@ -60,109 +60,118 @@ function MachineResponse() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-
     const timer = setTimeout(() => {
-      setIsLoading(false); 
-      setLlmResponse("I love responding to humans"); 
+      setIsLoading(false);
+      setLlmResponse("I love responding to humans");
     }, 2000);
 
     return () => clearTimeout(timer);
   }, [llmResponse]);
 
   return (
-      <div>
-        <div className="text-left mt-4 text-gray p-2 rounded-lg">
-          {isLoading ? (<div class="loading">
-          <span>.</span>
-          <span>.</span>
-          <span>.</span>
-          </div> ) : (
+    <div>
+      <div className="text-left mt-4 text-gray p-2 rounded-lg">
+        {isLoading ? (
+          <div class="loading">
+            <span>.</span>
+            <span>.</span>
+            <span>.</span>
+          </div>
+        ) : (
           <p className="max-w-72 break-words inline-block text-md font-semibold px-2 py-1 rounded-lg bg-blue-700 text-gray-300">
             {llmResponse}
           </p>
-          )}
-        </div>
+        )}
       </div>
+    </div>
   );
 }
 
+function FileUpload() {
+  const [file, setFile] = useState();
+  const [responseText, setResponseText] = useState("");
+  const [file_text, setFileText] = useState("");
 
-  function FileUpload() {
-    const [file, setFile] = useState();
-    const [responseText, setResponseText] = useState('');
-    const [file_text, setFileText] = useState("");
+  const handleFileChange = (event) => {
+    setFile(event.target.files[0]);
+  };
 
-    const handleFileChange=(event)=> {
-      setFile(event.target.files[0])
-    }
+  const handleFileSubmit = (event) => {
+    event.preventDefault();
 
-    const handleFileSubmit = (event) => {
-      event.preventDefault()
+    // may need to change port to a different number to match the flask port depending on system
+    const url = "http://localhost:8080/upload-pdf";
+    const formData = new FormData();
 
-      // may need to change port to a different number to match the flask port depending on system
-      const url = 'http://localhost:8080/upload-pdf';
-      const formData = new FormData();
+    if (!file) {
+      setResponseText("No file selected! Please select a file!");
+      setFileText("");
+    } else if (file.type !== "application/pdf") {
+      setResponseText(
+        `Incompatible File:  ${file.name} is not a pdf. Please select a PDF!`
+      );
+      setFileText("");
+    } else {
+      formData.append("file", file);
+      formData.append("fileName", file.name);
 
-      if (!file) {
-        setResponseText("No file selected! Please select a file!")
-        setFileText("")
-      }
-      else if (file.type !== 'application/pdf') {
-        setResponseText(`Incompatible File:  ${file.name} is not a pdf. Please select a PDF!`)
-        setFileText("")
-      }
-      else {
-        formData.append('file', file);
-        formData.append('fileName', file.name);
+      const config = {
+        headers: {
+          "content-type": "multipart/form-data",
+          "Access-Control-Allow-Origin": "*"
+        }
+      };
 
-        const config = {
-          headers: {
-            'content-type': 'multipart/form-data',
-            'Access-Control-Allow-Origin': '*'
-          },
-        };
-    
-        axios.post(url, formData, config).then((response) => {
-
+      axios
+        .post(url, formData, config)
+        .then((response) => {
           if (response.data.text) {
             setFileText(response.data.text);
-            setResponseText(`File "${file.name}" was uploaded successfully! Here is the file text:\n`);
+            setResponseText(
+              `File "${file.name}" was uploaded successfully! Here is the file text:\n`
+            );
+          } else {
+            setFileText(response.data.error);
           }
-          else {
-            setFileText(response.data.error)
+        })
+        .catch((error) => {
+          if (error.response) {
+            setResponseText(`"${error.response.data}`);
+            setFileText("");
+          } else {
+            setResponseText(`Failed to upload file.`);
+            setFileText("");
           }
-        }
-        )
-          .catch((error) => {
-            if (error.response) {
-              setResponseText(`"${error.response.data}`)
-              setFileText("")
-            }
-        
-            else {
-              setResponseText(`Failed to upload file.`)
-              setFileText("")
-            }
         });
-      } 
     }
+  };
 
-    return (
-      <div className="file-submit-button">
-        <form onSubmit={handleFileSubmit}>
-            <input type="file" id="myFile" name="filename" accept=".pdf" onChange={handleFileChange}></input>
-            <button class='text-blue-500 bg-white hover:bg-gray-200 focus:ring-4 focus:outline-none focus:ring-white-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center  hover:bg-gray-800 focus:ring-4 focus:outline-none focus:ring-white-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center light:hover:bg-gray-700 dark:focus:ring-blue-800' 
-            type="submit">Upload PDF</button>
-        </form>
-        <div class='text-white'>
-          <p>{responseText}</p>
-          <p>{file_text}</p>
-        </div>
+  return (
+    <div className="file-submit-button">
+      <form onSubmit={handleFileSubmit}>
+        <input
+          type="file"
+          id="myFile"
+          name="filename"
+          accept=".pdf"
+          onChange={handleFileChange}
+        ></input>
+        <button
+          class="text-blue-500 bg-white hover:bg-gray-200 focus:ring-4 focus:outline-none focus:ring-white-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center  hover:bg-gray-800 focus:ring-4 focus:outline-none focus:ring-white-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center light:hover:bg-gray-700 dark:focus:ring-blue-800"
+          type="submit"
+        >
+          Upload PDF
+        </button>
+      </form>
+      <div class="text-white">
+        <p>{responseText}</p>
+        <p>{file_text}</p>
       </div>
-    );
-  }
+    </div>
+  );
+}
 
-  function App() {
+function App() {
   return (
     <div className="App bg-cyan-200 2-300">
       <header className="App-header bg-white-200">
@@ -172,9 +181,9 @@ function MachineResponse() {
       </header>
       <div className="grid flex justify-center gap-2 w-200">
         {/* <img src={logo} alt="logo" class="max-w-xs" /> */}
-  
+
         <UserPrompt />
-        <FileUpload/>
+        <FileUpload />
       </div>
     </div>
   );
