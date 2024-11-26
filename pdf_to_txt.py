@@ -1,74 +1,38 @@
-from bottle import Bottle, response, request, run
+from flask import Flask, jsonify, request
+from flask_cors import CORS
 import fitz
 
-app = Bottle()
+app = Flask(__name__)
+CORS(app)
 
-def enable_cors():
-    
-    response.headers['Access-Control-Allow-Origin'] = '*'
-    response.headers['Access-Control-Allow-Methods'] = 'GET, POST, OPTIONS'
-    response.headers['Access-Control-Allow-Headers'] = 'Content-Type, Access-Control-Allow-Origin, Authorization'
+@app.route('/upload-pdf', methods=['GET','POST'])
 
-
-@app.route('/upload-pdf', method='OPTIONS')
-def handle_options():
-    enable_cors()
-    response.content_type = 'application/json'
-    return {}
-
-@app.post('/upload-pdf')
 def pdf_to_text():
-    enable_cors()
-
-
-    response.content_type = 'application/json'
-
-    file = request.files.get("file")
-
-    if 'file' not in request.files:
-        response.status = 400
-        return {"error": "No file part"}, 400
-
-    if file.filename == '':
-        response.status = 400
-        return {"error": "No selected file"}, 400
     
-    if file.filename.endswith(".pdf") != True:
-        print("i am the wrong type")
-        response.status = 400
-        print(f"Received file: {file.filename}, type: {type(file)}")
-        return {"error": file.filename + ": Incompatible file type. Please upload a PDF!"}, 400
-
-    print(type(file))
-    # if no cors issue, 
-
-    try:
-    
-        doc = fitz.open(stream=file.file, filetype="pdf")
-
-        text = ""
-        for page in doc:
-            text += page.get_text()
-
-        if text == "":
-            return {"error": file.filename + ": Empty file uploaded. Please upload a different file!"}, 400
-        return {"text": text}
-    except:
-        # if theres a cors issue, handle the raw byte encoding conversion
-
-        file.file.seek(0)
-        file_data = file.file.read()
-
-        doc = fitz.open(stream=file_data, filetype="pdf")
-
-        text = ""
-        for page in doc:
-            text += page.get_text()
+    if request.method == 'POST':
         
-        if text == "":
-            return {"error": file.filename + ": Empty file uploaded. Please upload a different file!"}, 400
+        if 'file' not in request.files:
+            return jsonify({"error": "No file part"}), 400
 
-        return {"text": text}
-    
+        file = request.files['file']
+
+        if file.name == '':
+            return jsonify({"error": "No selected file"}), 400
+
+        if file.filename.endswith(".pdf") != True:
+            return jsonify({"error": file.filename + ": Incompatible file type. Please upload a PDF!"}), 400
+
+
+        doc = fitz.open(stream=file.read(), filetype="pdf")
+
+        text = ""
+        for page in doc:
+            text += page.get_text()
+
+        if text == "":
+            return jsonify({"error": file.filename + ": Empty file uploaded. Please upload a different file!"}), 400
+
+        return jsonify({"text": text})
+
 if __name__ == '__main__':
-    app.run(host='localhost', port=8080, debug=True, reloader=True)
+    app.run(debug=True, port=5000)
