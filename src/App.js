@@ -3,6 +3,7 @@ import logo from "./logo.svg";
 // import { InputGroup } from "react-bootstrap";
 import "./App.css";
 import React, { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import axios from 'axios';
 
 function UserPrompt() {
@@ -102,11 +103,15 @@ function MachineResponse() {
       event.preventDefault()
 
       // may need to change port to a different number to match the flask port depending on system
-      const url = 'http://localhost:5000/upload-pdf';
+      const url = 'http://localhost:8080/upload-pdf';
       const formData = new FormData();
 
       if (!file) {
         setResponseText("No file selected! Please select a file!")
+        setFileText("")
+      }
+      else if (file.type !== 'application/pdf') {
+        setResponseText(`Incompatible File:  ${file.name} is not a pdf. Please select a PDF!`)
         setFileText("")
       }
       else {
@@ -116,18 +121,31 @@ function MachineResponse() {
         const config = {
           headers: {
             'content-type': 'multipart/form-data',
+            'Access-Control-Allow-Origin': '*'
           },
         };
     
         axios.post(url, formData, config).then((response) => {
-          setFileText(response.data.text)
-          setResponseText(`File "${file.name}" was uploaded successfully! Here is the file text:\n`);
+
+          if (response.data.text) {
+            setFileText(response.data.text);
+            setResponseText(`File "${file.name}" was uploaded successfully! Here is the file text:\n`);
+          }
+          else {
+            setFileText(response.data.error)
+          }
         }
-          
         )
           .catch((error) => {
-            setResponseText(`"${error.response.data.error}`)
-            setFileText("")
+            if (error.response) {
+              setResponseText(`"${error.response.data}`)
+              setFileText("")
+            }
+        
+            else {
+              setResponseText(`Failed to upload file.`)
+              setFileText("")
+            }
         });
       } 
     }
