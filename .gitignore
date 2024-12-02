@@ -5,7 +5,10 @@
 /.pnp
 .pnp.js
 /venv
-
+# Database and local files
+/src/data
+logs
+__pycache__
 # testing
 /coverage
 
@@ -18,7 +21,7 @@
 .env.development.local
 .env.test.local
 .env.production.local
-
+.vscode
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
