@@ -5,6 +5,7 @@
 /.pnp
 .pnp.js
 /venv
+/src/mysqldb/node_modules
 
 # testing
 /coverage

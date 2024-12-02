@@ -2,8 +2,9 @@
 // import Form from "react-bootstrap/Form";
 // import { InputGroup } from "react-bootstrap";
 import "./App.css";
-import React, { useState } from "react";
-import axios from 'axios';
+import React, { useState, useEffect } from "react";
+import axios from "axios";
+import mysql from "mysql2/promise";
 
 function UserPrompt() {
   const [inputValue, setInputValue] = useState("");
@@ -55,65 +56,142 @@ function UserPrompt() {
   );
 }
 
-  function FileUpload() {
-    const [file, setFile] = useState();
-    const [responseText, setResponseText] = useState('');
-    const [file_text, setFileText] = useState("");
+function MachineResponse() {
+  const [llmResponse, setLlmResponse] = useState("");
+  const [isLoading, setIsLoading] = useState(true);
 
-    const handleFileChange=(event)=> {
-      setFile(event.target.files[0])
-    }
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+      setLlmResponse("I love responding to humans");
+    }, 2000);
 
-    const handleFileSubmit = (event) => {
-      event.preventDefault()
+    return () => clearTimeout(timer);
+  }, [llmResponse]);
 
-      // may need to change port to a different number to match the flask port depending on system
-      const url = 'http://localhost:3000/upload-pdf';
-      const formData = new FormData();
-
-      if (!file) {
-        setResponseText("No file selected! Please select a file!")
-        setFileText("")
-      }
-      else {
-        formData.append('file', file);
-        formData.append('fileName', file.name);
-
-        const config = {
-          headers: {
-            'content-type': 'multipart/form-data',
-          },
-        };
-    
-        axios.post(url, formData, config).then((response) => {
-          setFileText(response.data.text)
-          setResponseText(`File "${file.name}" was uploaded successfully! Here is the file text:\n`);
-        }
-          
-        )
-          .catch((error) => {
-            setResponseText(`"${error.response.data.error}`)
-            setFileText("")
-        });
-      } 
-    }
-
-    return (
-      <div className="file-submit-button">
-        <form onSubmit={handleFileSubmit}>
-            <input type="file" id="myFile" name="filename" accept=".pdf" onChange={handleFileChange}></input>
-            <button class='text-blue-500 bg-white hover:bg-gray-200 focus:ring-4 focus:outline-none focus:ring-white-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center  hover:bg-gray-800 focus:ring-4 focus:outline-none focus:ring-white-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center light:hover:bg-gray-700 dark:focus:ring-blue-800' 
-            type="submit">Upload PDF</button>
-        </form>
-        <div class='text-white'>
-          <p>{responseText}</p>
-          <p>{file_text}</p>
-        </div>
+  return (
+    <div>
+      <div className="text-left mt-4 text-gray p-2 rounded-lg">
+        {isLoading ? (
+          <div class="loading">
+            <span>.</span>
+            <span>.</span>
+            <span>.</span>
+          </div>
+        ) : (
+          <p className="max-w-72 break-words inline-block text-md font-semibold px-2 py-1 rounded-lg bg-blue-700 text-gray-300">
+            {llmResponse}
+          </p>
+        )}
       </div>
+    </div>
+  );
+}
+
+async function FileUpload() {
+  const [file, setFile] = useState();
+  const [responseText, setResponseText] = useState("");
+  const [file_text, setFileText] = useState("");
+
+  const handleFileChange = (event) => {
+    setFile(event.target.files[0]);
+  };
+
+  const handleFileSubmit = (event) => {
+    event.preventDefault();
+
+    // may need to change port to a different number to match the flask port depending on system
+    const url = "http://localhost:8080/upload-pdf";
+    const formData = new FormData();
+
+    if (!file) {
+      setResponseText("No file selected! Please select a file!");
+      setFileText("");
+    } else if (file.type !== "application/pdf") {
+      setResponseText(
+        `Incompatible File:  ${file.name} is not a pdf. Please select a PDF!`
+      );
+      setFileText("");
+    } else {
+      formData.append("file", file);
+      formData.append("fileName", file.name);
+
+      const config = {
+        headers: {
+          "content-type": "multipart/form-data",
+          "Access-Control-Allow-Origin": "*"
+        }
+      };
+
+      axios
+        .post(url, formData, config)
+        .then((response) => {
+          if (response.data.text) {
+            setFileText(response.data.text);
+            setResponseText(
+              `File "${file.name}" was uploaded successfully! Here is the file text:\n`
+            );
+          } else {
+            setFileText(response.data.error);
+          }
+        })
+        .catch((error) => {
+          if (error.response) {
+            setResponseText(`"${error.response.data}`);
+            setFileText("");
+          } else {
+            setResponseText(`Failed to upload file.`);
+            setFileText("");
+          }
+        });
+    }
+  };
+  try {
+    // create the connection to database
+    const connection = await mysql.createConnection({
+      host: "localhost",
+      user: "root",
+      database: "test"
+    });
+
+    // execute will internally call prepare and query
+    const [results, fields] = await connection.execute(
+      "SELECT * FROM `table` WHERE `name` = ? AND `age` > ?",
+      ["Rick C-137", 53]
     );
+
+    console.log(results); // results contains rows returned by server
+    console.log(fields); // fields contains extra meta data about results, if available
+  } catch (err) {
+    console.log(err);
   }
 
-  function App() {
+  return (
+    <div className="file-submit-button">
+      <form onSubmit={handleFileSubmit}>
+        <input
+          type="file"
+          id="myFile"
+          name="filename"
+          accept=".pdf"
+          onChange={handleFileChange}
+        ></input>
+        <button
+          class="text-blue-500 bg-white hover:bg-gray-200 focus:ring-4 focus:outline-none focus:ring-white-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center  hover:bg-gray-800 focus:ring-4 focus:outline-none focus:ring-white-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center light:hover:bg-gray-700 dark:focus:ring-blue-800"
+          type="submit"
+        >
+          Upload PDF
+        </button>
+      </form>
+      <div class="text-white">
+        <p>{responseText}</p>
+        <p>{file_text}</p>
+      </div>
+    </div>
+  );
+}
+
+function App() {
   return (
     <div className="App bg-cyan-200 2-300">
       <header className="App-header bg-white-200">
@@ -123,9 +201,9 @@ function UserPrompt() {
       </header>
       <div className="grid flex justify-center gap-2 w-200">
         {/* <img src={logo} alt="logo" class="max-w-xs" /> */}
-  
+
         <UserPrompt />
-        <FileUpload/>
+        <FileUpload />
       </div>
     </div>
   );
