@@ -19,7 +19,8 @@
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
-    "start-flask": "python pdf_to_txt.py"
+    "start-flask": "python pdf_to_txt.py",
+    "start-backend": "python ollama_setup.py"
   },
   "eslintConfig": {
     "extends": [
