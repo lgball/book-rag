@@ -5,9 +5,11 @@
 /venv
 /.pnp
 .pnp.js
-
+.vscode
+__pycache__
 # Database and local files
 /src/data
+logs
 # testing
 /coverage
 

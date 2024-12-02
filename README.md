@@ -20,6 +20,12 @@ In the other terminal run this after creating and activating a virtual environme
     npm run start-flask
 ```
 
+In yet another terminal run this after creating and activating a virtual environment (This will start all the ollama back end
+services needed for both RAG and LLM functionality)
+```
+    npm run start-backend
+```
+
 Note: I did get some deprecated dependencies, but it should be fine
 
 To start coding on an issue:
