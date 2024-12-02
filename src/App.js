@@ -3,7 +3,6 @@ import logo from "./logo.svg";
 // import { InputGroup } from "react-bootstrap";
 import "./App.css";
 import React, { useState, useEffect } from "react";
-import React, { useState, useEffect } from "react";
 import axios from 'axios';
 
 function UserPrompt() {
@@ -46,7 +45,7 @@ function UserPrompt() {
       <div>
         {submittedPrompt && (
           <div className="text-right mt-4 text-blue-700 p-2 rounded-lg">
-            <p className="max-w-72 break-words inline-block text-md font-semibold px-2 py-1 rounded-lg bg-gray-700 text-blue-600">
+            <p className="max-w-72 break-words inline-block text-md font-semibold px-2 py-1 rounded-lg bg-gray-300 text-blue-600">
               {submittedPrompt}
             </p>
             <MachineResponse />
@@ -65,7 +64,7 @@ function MachineResponse() {
 
     const timer = setTimeout(() => {
       setIsLoading(false); 
-      setLlmResponse("I love responding to humans"); 
+      setLlmResponse("Gatsby bought the mansion so that Daisy would be just across the bay."); 
     }, 2000);
 
     return () => clearTimeout(timer);
@@ -129,7 +128,7 @@ function MachineResponse() {
 
           if (response.data.text) {
             setFileText(response.data.text);
-            setResponseText(`File "${file.name}" was uploaded successfully! Here is the file text:\n`);
+            setResponseText(`File "${file.name}" was uploaded successfully!\n`);
           }
           else {
             setFileText(response.data.error)
@@ -159,7 +158,6 @@ function MachineResponse() {
         </form>
         <div class='text-white'>
           <p>{responseText}</p>
-          <p>{file_text}</p>
         </div>
       </div>
     );
