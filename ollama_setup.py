@@ -1,17 +1,14 @@
 
 
 import subprocess
-import psutil
 import atexit
 import signal
 import os
-import socket
 import time
 import requests
 from langchain_chroma import Chroma
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_ollama.chat_models import ChatOllama
-from langchain import hub
 
 # Define paths to store data
 CHROMA_PATH = "src/data/chroma"
