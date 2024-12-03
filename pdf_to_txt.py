@@ -1,7 +1,3 @@
-import tracemalloc
-tracemalloc.start()
-import warnings
-warnings.simplefilter("always", ResourceWarning)
 import traceback
 import warnings
 from bottle import Bottle, response, request, run
