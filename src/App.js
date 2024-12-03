@@ -1,298 +1,274 @@
-//import logo from "./ChapterChatLogo.png";
-// import Form from "react-bootstrap/Form";
-// import { InputGroup } from "react-bootstrap";
+import React, { useState, useEffect } from "react";
+import axios from "axios";
 import "./App.css";
-import React, { useState } from "react";
-import axios from 'axios';
 
-function Response() {
-  const [chatText, setChatText] = useState("");
+// Import React Bootstrap components
+import {
+  Container,
+  Row,
+  Col,
+  Form,
+  Button,
+  Card,
+  Alert,
+  Spinner,
+} from "react-bootstrap";
 
-  const handleTextChange=(event)=> {
-    setChatText(chatText)
-  }
+// Component for PDF Upload
+function PDFUpload({ onUploadSuccess }) {
+  const [file, setFile] = useState(null);
+  const [uploadStatus, setUploadStatus] = useState("");
+  const [isUploading, setIsUploading] = useState(false);
 
-
-  const handleChatSubmit = (event) => {
-    event.preventDefault()
-
-    // may need to change port to a different number to match the flask port depending on system
-    const url = 'http://localhost:8080/chatbot';
-    const formData = new FormData();
-
-      const config = {
-        headers: {
-          'content-type': 'multipart/form-data',
-        },
-      };
-  
-      axios.post(url, formData, config).then((response) => {
-        setChatText(response.data.result)
-      }
-        
-      )
-        .catch((error) => {
-          setChatText(`"${error.response.data.error}`)
-          setChatText("")
-      });
-    }
-    return (
-      <div>
-        {chatText}
-      </div>
-    )
-}
-function UserPrompt() {
-  const [inputValue, setInputValue] = useState("");
-  const [submittedPrompt, setSubmittedPrompt] = useState("");
-  const [chatText, setChatText] = useState("");
-  const [file, setFile] = useState();
-    const [responseText, setResponseText] = useState('');
-    const [file_text, setFileText] = useState("");
-
-    const handleFileChange=(event)=> {
-      setFile(event.target.files[0])
-    }
-
-
-
-    const handleFileSubmit = (event) => {
-      event.preventDefault()
-
-      // may need to change port to a different number to match the flask port depending on system
-      const url = 'http://localhost:8080/upload-pdf';
-      const formData = new FormData();
-
-      if (!file) {
-        setResponseText("No file selected! Please select a file!")
-        setFileText("")
-      }
-      else if (file.type !== "application/pdf") {
-        setResponseText("Invalid file type! Please upload a PDF file!")
-        setFileText("")
-      }
-      else {
-        formData.append('file', file);
-        formData.append('fileName', file.name);
-
-        const config = {
-          headers: {
-            'content-type': 'multipart/form-data',
-            "Access-Control-Allow-Origin": "*",
-          },
-        };
-    
-        axios.post(url, formData, config).then((response) => {
-          if (response.data.text){
-            setFileText(response.data.text)
-          setResponseText(`File "${file.name}" was uploaded successfully! Here is the file text:\n`);
-          }
-          else {
-            setFileText(response.data.error)
-          }
-        })
-        
-          .catch((error) => {
-            if (error.response) {
-            setResponseText(`"${error.response.data.error}`)
-            setFileText("")
-            }
-            else {
-              setResponseText("Failed to upload file." )
-              setFileText("")
-            }
-        });
-      } 
-    }
-  const handleTextChange=(event)=> {
-    setChatText(chatText)
-  }
-
-
-
-  const handleSubmit = (event) => {
-    event.preventDefault();
-    setSubmittedPrompt(inputValue)
-    setInputValue("");
-    fetch("http://localhost:8080/chatbot", {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({prompt: inputValue, file_name: file.name}),  // body data type must match "Content-Type" header 
-    })
-    .then(response => {
-      if (!response.ok) {
-        throw new Error('Network response was not ok');
-      }
-      return response.json();
-    })
-    .then(result => {
-      console.log('Success:', result); 
-
-  })
-  .catch((error) => {
-    console.error('Error:', error);}
-    )
-    // const url = 'http://localhost:8080/chatbot';
-    // const formData = new FormData();
-
-    //   const config = {
-    //     headers: {
-    //       'content-type': 'multipart/form-data',
-    //     },
-    //   };
-  
-    //   axios.post(url, formData, config).then((response) => {
-    //     setChatText(response.data.result)
-    //   }
-        
-    //   )
-    //     .catch((error) => {
-    //       setChatText(`"${error.response.data.error}`)
-    //       setChatText("")
-    //   });
-  }
-  const handleInputChange = (event) => {
-    setInputValue(event.target.value);
+  const handleFileChange = (event) => {
+    setFile(event.target.files[0]);
+    setUploadStatus("");
   };
 
-  
+  const handleFileUpload = async (event) => {
+    event.preventDefault();
+    if (!file) {
+      setUploadStatus("No file selected");
+      return;
+    }
+    const formData = new FormData();
+    formData.append("file", file);
+
+    try {
+      setIsUploading(true);
+      const response = await axios.post(
+        "http://localhost:8080/upload-pdf",
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+      setUploadStatus(`Uploaded ${file.name}`);
+      onUploadSuccess();
+    } catch (error) {
+      setUploadStatus("Upload failed");
+    } finally {
+      setIsUploading(false);
+    }
+  };
 
   return (
-    <div className="min-w-[550px] grid flex gap-2">
-      <div className="file-submit-button">
-        <form onSubmit={handleFileSubmit}>
-            <input type="file" id="myFile" name="filename" accept=".pdf" onChange={handleFileChange}></input>
-            <button class='text-blue-500 bg-white hover:bg-gray-200 focus:ring-4 focus:outline-none focus:ring-white-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center  hover:bg-gray-800 focus:ring-4 focus:outline-none focus:ring-white-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center light:hover:bg-gray-700 dark:focus:ring-blue-800' 
-            type="submit">Upload PDF</button>
-        </form>
-        <div class='text-white'>
-          <p>{responseText}</p>
-        </div>
-      </div>
-      <form onSubmit={handleSubmit}>
-        <div className="flex gap-2 w-full grow">
-          <input
-            type="text"
-            id="first_name"
-            value={inputValue}
-            onChange={handleInputChange}
-            class="w-full bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-            placeholder="Input Prompt"
-            required
-          />
-
-          <button
-            type="submit"
-            class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+    <Card className="mb-4">
+      <Card.Body>
+        <Card.Title>Upload PDF</Card.Title>
+        <Form onSubmit={handleFileUpload}>
+          <Form.Group controlId="formFile" className="mb-3">
+            <Form.Control type="file" accept=".pdf" onChange={handleFileChange} />
+          </Form.Group>
+          <Button variant="primary" type="submit" disabled={isUploading}>
+            {isUploading ? <Spinner as="span" animation="border" size="sm" /> : "Upload"}
+          </Button>
+        </Form>
+        {uploadStatus && (
+          <Alert
+            variant={uploadStatus.includes("Uploaded") ? "success" : "danger"}
+            className="mt-3"
           >
-            Submit
-          </button>
-        </div>
-      </form>
-      {/* Display the submitted prompt */}
-      <div>
-        {submittedPrompt && (
-          <div className="text-right mt-4 text-blue-700 p-2 rounded-lg">
-            <p className="max-w-72 break-words inline-block text-md font-semibold px-2 py-1 rounded-lg bg-gray-300 text-blue-600">
-              {submittedPrompt}
-            </p>
-          </div>
+            {uploadStatus}
+          </Alert>
         )}
-      </div>
-    </div>
+      </Card.Body>
+    </Card>
   );
 }
 
-  function FileUpload() {
-    const [file, setFile] = useState();
-    const [responseText, setResponseText] = useState('');
-    const [file_text, setFileText] = useState("");
+// Component for PDF Selection and Deletion
+function PDFSelection({ selectedPDF, onSelectPDF, onDeletePDF }) {
+  const [pdfList, setPDFList] = useState([]);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
 
-    const handleFileChange=(event)=> {
-      setFile(event.target.files[0])
+  const fetchPDFList = async () => {
+    try {
+      const response = await axios.get("http://localhost:8080/list-pdfs");
+      setPDFList(response.data.pdfs);
+    } catch (error) {
+      console.error("Failed to fetch PDF list");
+      setErrorMessage("Failed to fetch PDF list");
     }
+  };
 
+  useEffect(() => {
+    fetchPDFList();
+  }, []);
 
-
-    const handleFileSubmit = (event) => {
-      event.preventDefault()
-
-      // may need to change port to a different number to match the flask port depending on system
-      const url = 'http://localhost:8080/upload-pdf';
-      const formData = new FormData();
-
-      if (!file) {
-        setResponseText("No file selected! Please select a file!")
-        setFileText("")
-      }
-      else if (file.type !== "application/pdf") {
-        setResponseText("Invalid file type! Please upload a PDF file!")
-        setFileText("")
-      }
-      else {
-        formData.append('file', file);
-        formData.append('fileName', file.name);
-
-        const config = {
-          headers: {
-            'content-type': 'multipart/form-data',
-            "Access-Control-Allow-Origin": "*",
-          },
-        };
-    
-        axios.post(url, formData, config).then((response) => {
-          if (response.data.text){
-            setFileText(response.data.text)
-          setResponseText(`File "${file.name}" was uploaded successfully! Here is the file text:\n`);
-          }
-          else {
-            setFileText(response.data.error)
-          }
-        })
-        
-          .catch((error) => {
-            if (error.response) {
-            setResponseText(`"${error.response.data.error}`)
-            setFileText("")
-            }
-            else {
-              setResponseText("Failed to upload file." )
-              setFileText("")
-            }
-        });
-      } 
+  const handleDelete = async () => {
+    if (!selectedPDF) {
+      alert("Please select a PDF to delete.");
+      return;
     }
-    
-      
-    return (
-      <div className="file-submit-button">
-        <form onSubmit={handleFileSubmit}>
-            <input type="file" id="myFile" name="filename" accept=".pdf" onChange={handleFileChange}></input>
-            <button class='text-blue-500 bg-white hover:bg-gray-200 focus:ring-4 focus:outline-none focus:ring-white-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center  hover:bg-gray-800 focus:ring-4 focus:outline-none focus:ring-white-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center light:hover:bg-gray-700 dark:focus:ring-blue-800' 
-            type="submit">Upload PDF</button>
-        </form>
-        <div class='text-white'>
-          <p>{responseText}</p>
-        </div>
-      </div>
-    );
-  }
+    try {
+      setIsDeleting(true);
+      const response = await axios.post("http://localhost:8080/delete-pdf", {
+        pdf: selectedPDF,
+      });
+      alert(response.data.message);
+      onSelectPDF("");
+      fetchPDFList();
+      if (onDeletePDF) onDeletePDF();
+    } catch (error) {
+      console.error("Failed to delete PDF");
+      alert("Failed to delete PDF");
+    } finally {
+      setIsDeleting(false);
+    }
+  };
 
-  function App() {
   return (
-    <div className="App bg-cyan-200 2-300">
-      <header className="App-header bg-white-200">
-        <h1 className="text-3xl font-bold underline">
-          You have successfully gotten to the start of ChapterChat!
-        </h1>
-      </header>
-      <div className="grid flex justify-center gap-2 w-200">
-        {/* <img src={logo} alt="logo" class="max-w-xs" /> */}
-  
-        <UserPrompt />
-      </div>
+    <Card className="mb-4">
+      <Card.Body>
+        <Card.Title>Select PDF</Card.Title>
+        {errorMessage && <Alert variant="danger">{errorMessage}</Alert>}
+        <Form.Group controlId="selectPDF" className="mb-3">
+          <Form.Label>Choose a PDF</Form.Label>
+          <Form.Select
+            value={selectedPDF}
+            onChange={(e) => onSelectPDF(e.target.value)}
+          >
+            <option value="">Select a PDF</option>
+            {pdfList.map((pdf) => (
+              <option key={pdf} value={pdf}>
+                {pdf}
+              </option>
+            ))}
+          </Form.Select>
+        </Form.Group>
+        <Button
+          variant="danger"
+          onClick={handleDelete}
+          disabled={isDeleting || !selectedPDF}
+        >
+          {isDeleting ? <Spinner as="span" animation="border" size="sm" /> : "Delete Selected PDF"}
+        </Button>
+      </Card.Body>
+    </Card>
+  );
+}
+
+// Component for LLM Chat Window with Conversation History
+function LLMChatWindow({ selectedPDF }) {
+  const [inputPrompt, setInputPrompt] = useState("");
+  const [chatHistory, setChatHistory] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+
+  const handlePromptSubmit = async (event) => {
+    event.preventDefault();
+    if (!selectedPDF) {
+      alert("Please select a PDF.");
+      return;
+    }
+    if (!inputPrompt.trim()) {
+      alert("Please enter a prompt.");
+      return;
+    }
+
+    const history = chatHistory.map((chat) => [chat.prompt, chat.response]);
+
+    try {
+      setIsLoading(true);
+      const response = await axios.post("http://localhost:8080/chat", {
+        query: inputPrompt,
+        pdf: selectedPDF,
+        history: history,
+      });
+      const responseText = response.data.response;
+      setChatHistory([
+        ...chatHistory,
+        { prompt: inputPrompt, response: responseText },
+      ]);
+      setInputPrompt("");
+    } catch (error) {
+      console.error("Failed to get response");
+      setErrorMessage("Failed to get response from the server.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    <Card className="mb-4">
+      <Card.Body>
+        <Card.Title>Chat with LLM</Card.Title>
+        <div className="chat-window mb-3">
+          {chatHistory.length === 0 && <p>No conversations yet.</p>}
+          {chatHistory.map((chat, index) => (
+            <div key={index} className="mb-2">
+              <p>
+                <strong>User:</strong> {chat.prompt}
+              </p>
+              <p>
+                <strong>LLM:</strong> {chat.response}
+              </p>
+            </div>
+          ))}
+        </div>
+        {errorMessage && <Alert variant="danger">{errorMessage}</Alert>}
+        <Form onSubmit={handlePromptSubmit}>
+          <Row>
+            <Col xs={9}>
+              <Form.Control
+                type="text"
+                value={inputPrompt}
+                onChange={(e) => setInputPrompt(e.target.value)}
+                placeholder="Enter your prompt"
+                disabled={isLoading}
+              />
+            </Col>
+            <Col xs={3}>
+              <Button variant="primary" type="submit" disabled={isLoading}>
+                {isLoading ? <Spinner as="span" animation="border" size="sm" /> : "Send"}
+              </Button>
+            </Col>
+          </Row>
+        </Form>
+      </Card.Body>
+    </Card>
+  );
+}
+
+function App() {
+  const [selectedPDF, setSelectedPDF] = useState("");
+  const [newChatCounter, setNewChatCounter] = useState(0);
+
+  const handlePDFUploadSuccess = () => {
+    // You can add any additional logic here if needed after a successful upload
+  };
+
+  const handlePDFDeletion = () => {
+    // Reset the selected PDF after deletion
+    setSelectedPDF("");
+  };
+
+  const handleNewChat = () => {
+    setSelectedPDF("");
+    setNewChatCounter(prev => prev + 1);
+  };
+
+  return (
+    <div className="App bg-dark text-light min-vh-100">
+      <Container className="py-4">
+        <header className="mb-4 d-flex justify-content-between align-items-center">
+          <h1 className="text-center mb-0">Welcome to Chapter Chat!</h1>
+          <Button variant="secondary" onClick={handleNewChat}>
+            New Chat
+          </Button>
+        </header>
+        <PDFUpload onUploadSuccess={handlePDFUploadSuccess} />
+        <PDFSelection
+          selectedPDF={selectedPDF}
+          onSelectPDF={setSelectedPDF}
+          onDeletePDF={handlePDFDeletion}
+        />
+        <LLMChatWindow key={newChatCounter} selectedPDF={selectedPDF} />
+      </Container>
     </div>
   );
 }

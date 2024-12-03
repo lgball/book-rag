@@ -8,6 +8,7 @@
 # Database and local files
 /src/data
 logs
+uploaded_pdfs
 __pycache__
 # testing
 /coverage
