@@ -98,22 +98,7 @@ signal.signal(signal.SIGTERM, signal_handler)
 # Start other backend services
 def initial_setup():
     start_services()
-    rag_pipeline("What happens to Frankenstein in the book?")
 
-def rag_pipeline(query, top_K=TOP_K):
-    # Load Chroma vectorstore
-    embeddings = HuggingFaceEmbeddings(model_name="sentence-transformers/all-mpnet-base-v2")
-    vectorstore = Chroma(persist_directory=CHROMA_PATH, embedding_function=embeddings)
-    # Load Ollama model
-    ollama = ChatOllama(model=OLLAMA_MODEL, address=OLLAMA_ADDRESS, port=OLLAMA_PORT)
-    retriever = vectorstore.as_retriever(search_kwargs={"k": top_K})
-    most_relevant_text = retriever.invoke(query)
-    prompt_message = [
-        ("system", f"You are a helpful AI assistant that can answer questions about the text using RAG with attached context {most_relevant_text}."),
-        ("user", query)
-    ]
-    result = ollama.invoke(prompt_message)
-    print(result)
 
     # Retrieve the most relevant text chunks
 
