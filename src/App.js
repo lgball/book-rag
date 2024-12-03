@@ -197,7 +197,8 @@ function LLMChatWindow({ selectedPDF }) {
     <Card className="mb-4">
       <Card.Body>
         <Card.Title>Chat with LLM</Card.Title>
-        <div className="chat-window mb-3">
+        <div className="chat-window mb-3"
+        style={{maxHeight:"600px", overflowY: "auto"}}>
           {chatHistory.length === 0 && <p>No conversations yet.</p>}
           {chatHistory.map((chat, index) => (
             <div key={index} className="mb-2">

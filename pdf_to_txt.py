@@ -1,4 +1,9 @@
+import tracemalloc
+tracemalloc.start()
+import warnings
+warnings.simplefilter("always", ResourceWarning)
 import traceback
+import warnings
 from bottle import Bottle, response, request, run
 from langchain_chroma import Chroma
 from langchain_huggingface import HuggingFaceEmbeddings
@@ -38,13 +43,27 @@ def rag_pipeline(query, filename, chat_history, top_K=TOP_K):
     
     # **Step 2: Retrieve documents using combined query**
     filter_condition = {"source": filename}
-    most_relevant_docs = retriever.get_relevant_documents(combined_query, filter=filter_condition)
+    most_relevant_docs = retriever.invoke(combined_query, filter=filter_condition)
     
     context = "\n".join([doc.page_content for doc in most_relevant_docs[:top_K]])
     
-    # Prepare the prompt messages
+    system_message = f"""
+    You are a knowledgeable and concise AI assistant.
+    Use the provided context to answer the user's questions accurately.
+    If the information is not available in the context, use your own knowledge to provide a comprehensive answer.
+    
+    ### Context:
+    {context}
+    
+    ### Instructions:
+    - Prioritize information from the provided context.
+    - Supplement your response with your own knowledge only if the context does not contain the necessary information.
+    - If your context is not sufficient, fill in the gaps with relevant information. (DO NOT SAY THE CONTEXT IS INSUFFICIENT)
+    - Ensure all answers are clear, accurate, and relevant to the user's query.
+    """
+    
     messages = [
-        ("system", f"You are a helpful AI assistant that can answer questions about the text using RAG with attached context: {context}"),
+        ("system", system_message)
     ]
     # Add conversation history
     for user_msg, assistant_msg in chat_history:
@@ -55,8 +74,8 @@ def rag_pipeline(query, filename, chat_history, top_K=TOP_K):
     
     # Invoke the model
     result = ollama.invoke(messages)
-    
-    # Return the assistant's reply
+        
+        # Return the assistant's reply
     return result.content
 
 # Endpoint for chatbot
